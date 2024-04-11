@@ -225,7 +225,7 @@
             supplierPrices.forEach(function(supplier) {
                 var card = document.createElement('div');
                 card.classList.add('card', 'mb-3');
-                card.innerHTML = '<div class="card-body"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + '</p></div>';
+                card.innerHTML = '<div class="card-body"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
                 cardsContainer.appendChild(card);
             });
         }
