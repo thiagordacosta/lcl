@@ -216,6 +216,30 @@
             }
         }
 
+        // Variable to store the previous state
+        var previousState;
+
+        // Function to display card information in the search bar container
+        // Function to display card information in the search bar container
+        function displayCardInformation(name, price) {
+            var searchBarContainer = document.querySelector('.search-bar-container');
+            // Store the previous state
+            previousState = searchBarContainer.innerHTML;
+            var content = '<div><button class="btn btn-secondary mb-3" onclick="goBack()">Go Back</button></div>' + 
+                        '<h3>' + name + '</h3><p>Price: $' + price + ' Ton/M3</p>' +
+                        '<p>Some additional information about ' + name + '</p>' +
+                        '<p>Another piece of information</p>';
+            searchBarContainer.innerHTML = content;
+        }
+
+
+        // Function to go back to the supplier prices view
+        function goBack() {
+            var searchBarContainer = document.querySelector('.search-bar-container');
+            // Revert to the previous state
+            searchBarContainer.innerHTML = previousState;
+        }
+
         // Function to display supplier prices
         function displaySupplierPrices() {
             var cardsContainer = document.getElementById('cards');
@@ -225,7 +249,7 @@
             supplierPrices.forEach(function(supplier) {
                 var card = document.createElement('div');
                 card.classList.add('card', 'mb-3');
-                card.innerHTML = '<div class="card-body"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
+                card.innerHTML = '<div class="card-body" onclick="displayCardInformation(\'' + supplier.name + '\', ' + supplier.price + ')"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
                 cardsContainer.appendChild(card);
             });
         }
