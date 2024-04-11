@@ -45,7 +45,7 @@
     <div id="container">
         <!-- Search bar section -->
         <div id="search-bar">
-            <h1>Location Search</h1>
+            <h1 onclick="clearSearchResult()">Location Search</h1>
             <!-- Autocomplete input field -->
             <input type="text" id="location-input" placeholder="Enter a location">
             <button onclick="searchLocation()">Search</button>
@@ -154,6 +154,8 @@
                 { name: 'Porto Itapoá', location: { lat: -26.121944, lng: -48.581111 }, lowestPrice: lowestPrice },
                 { name: 'Portonave', location: { lat: -26.831389, lng: -48.624444 }, lowestPrice: lowestPrice },
                 { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: lowestPrice },
+                { name: 'Dp World Santos', location: { lat: -23.997778, lng: -46.266111 }, lowestPrice: lowestPrice },
+                { name: 'Porto Chibatão', location: { lat: -3.097778, lng: -60.010833 }, lowestPrice: lowestPrice },
                 { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: lowestPrice }
             ];
 
@@ -274,6 +276,22 @@
                 }
             });
         };
+
+        // Function to clear the search result
+        function clearSearchResult() {
+            document.getElementById('location-input').value = '';
+            clearMarkers();
+            clearLines();
+            clearSupplierPrices();
+            map.setCenter({ lat: 0, lng: 0 });
+            map.setZoom(2);
+        }
+
+        // Function to clear the supplier prices cards
+        function clearSupplierPrices() {
+            var cardsContainer = document.getElementById('cards');
+            cardsContainer.innerHTML = '';
+        }
     </script>
     <!-- Include the Places library for autocomplete -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMV14guM5kbAvhtNhCy12zhblH1QF5V-0&libraries=places&callback=initMap"
