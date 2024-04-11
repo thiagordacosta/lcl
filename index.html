@@ -102,7 +102,7 @@
                 clearLines();
 
                 // Set the marker position for the searched location
-                addMarker(place.geometry.location, "Search Result: " + place.name);
+                addMarker(place.geometry.location, "Origin: " + place.name, '#FF0000'); // Change marker color for search result
 
                 // Add additional markers
                 addLocationMarkers();
@@ -123,10 +123,17 @@
         }
 
         // Function to add a marker to the map
-        function addMarker(location, name) {
+        function addMarker(location, name, color) {
             var marker = new google.maps.Marker({
                 position: location,
-                map: map
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeWeight: 0,
+                    scale: 8
+                }
             });
             markers.push(marker);
 
@@ -154,7 +161,7 @@
             ];
 
             locations.forEach(function(location) {
-                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice);
+                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice, '#4285F4'); // Change marker color for additional locations
             });
         }
 
@@ -226,7 +233,7 @@
                     clearLines();
 
                     // Set the marker position for the searched location
-                    addMarker(location, "Search Result: " + input);
+                    addMarker(location, "Search Result: " + input, '#FF0000'); // Change marker color for search result
 
                     // Add additional markers
                     addLocationMarkers();
