@@ -1,63 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Maps API Example</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        #container {
-            display: flex;
-            height: 100%;
-        }
-
-        #search-bar {
-            flex: 1;
-            padding: 20px;
-            background-color: #f0f0f0;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        #map-container {
-            flex: 2;
-            height: 100%;
-        }
-
         #map {
-            height: 100%;
+            height: 100vh;
             width: 100%;
         }
-
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #fff;
+        .search-bar-container {
+            height: 100vh;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <!-- Search bar section -->
-        <div id="search-bar">
-            <h1 onclick="clearSearchResult()">Location Search</h1>
-            <!-- Autocomplete input field -->
-            <input type="text" id="location-input" placeholder="Enter a location">
-            <button onclick="searchLocation()">Search</button>
-            <!-- Cards section -->
-            <div id="cards"></div>
-        </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Search bar section -->
+            <div class="col-lg-4 search-bar-container">
+                <div class="p-3">
+                    <h1 class="h3">Location Search</h1>
+                    <!-- Autocomplete input field -->
+                    <div class="input-group mb-3">
+                        <input type="text" id="location-input" class="form-control" placeholder="Enter a location">
+                        <button class="btn btn-primary" type="button" onclick="searchLocation()">Search</button>
+                    </div>
+                    <!-- Cards section -->
+                    <div id="cards"></div>
+                </div>
+            </div>
 
-        <!-- Map section -->
-        <div id="map-container">
-            <div id="map"></div>
+            <!-- Map section -->
+            <div class="col-lg-8">
+                <div id="map"></div>
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
     <script>
         var map;
@@ -116,7 +102,7 @@
                 clearLines();
 
                 // Set the marker position for the searched location
-                addMarker(place.geometry.location);
+                addMarker(place.geometry.location, "Search Result: " + place.name);
 
                 // Add additional markers
                 addLocationMarkers();
@@ -137,44 +123,15 @@
         }
 
         // Function to add a marker to the map
-        function addMarker(location) {
-            var marker = new google.maps.Marker({
-                position: location,
-                map: map
-            });
-            markers.push(marker);
-        }
-
-        // Function to add location markers based on search result
-        function addLocationMarkers() {
-            var lowestPrice = Math.min(...supplierPrices.map(supplier => supplier.price));
-            var locations = [
-                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: lowestPrice },
-                { name: 'Porto de Paranaguá', location: { lat: -25.5097, lng: -48.5261 }, lowestPrice: lowestPrice },
-                { name: 'Porto Itapoá', location: { lat: -26.121944, lng: -48.581111 }, lowestPrice: lowestPrice },
-                { name: 'Portonave', location: { lat: -26.831389, lng: -48.624444 }, lowestPrice: lowestPrice },
-                { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: lowestPrice },
-                { name: 'Dp World Santos', location: { lat: -23.997778, lng: -46.266111 }, lowestPrice: lowestPrice },
-                { name: 'Porto Chibatão', location: { lat: -3.097778, lng: -60.010833 }, lowestPrice: lowestPrice },
-                { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: lowestPrice }
-            ];
-
-            locations.forEach(function(location) {
-                addMarkerWithPopup(location.location, location.lowestPrice);
-            });
-        }
-
-        // Function to add a marker with popup message to the map
-        function addMarkerWithPopup(location, lowestPrice) {
+        function addMarker(location, name) {
             var marker = new google.maps.Marker({
                 position: location,
                 map: map
             });
             markers.push(marker);
 
-            var contentString = '<div>Lowest Price: $' + lowestPrice + '</div>';
             var infowindow = new google.maps.InfoWindow({
-                content: contentString
+                content: name
             });
 
             marker.addListener('mouseover', function() {
@@ -183,6 +140,21 @@
 
             marker.addListener('mouseout', function() {
                 infowindow.close();
+            });
+        }
+
+        // Function to add location markers based on search result
+        function addLocationMarkers() {
+            var lowestPrice = Math.min(...supplierPrices.map(supplier => supplier.price));
+            var locations = [
+                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: lowestPrice },
+                { name: 'Porto de Paranaguá', location: { lat: -25.5097, lng: -48.5261 }, lowestPrice: lowestPrice },
+                { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: lowestPrice },
+                { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: lowestPrice }
+            ];
+
+            locations.forEach(function(location) {
+                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice);
             });
         }
 
@@ -232,8 +204,8 @@
             // Iterate over supplier prices and create cards
             supplierPrices.forEach(function(supplier) {
                 var card = document.createElement('div');
-                card.classList.add('card');
-                card.innerHTML = '<h3>' + supplier.name + '</h3><p>Price: $' + supplier.price + '</p>';
+                card.classList.add('card', 'mb-3');
+                card.innerHTML = '<div class="card-body"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + '</p></div>';
                 cardsContainer.appendChild(card);
             });
         }
@@ -254,7 +226,7 @@
                     clearLines();
 
                     // Set the marker position for the searched location
-                    addMarker(location);
+                    addMarker(location, "Search Result: " + input);
 
                     // Add additional markers
                     addLocationMarkers();
@@ -293,8 +265,7 @@
             cardsContainer.innerHTML = '';
         }
     </script>
-    <!-- Include the Places library for autocomplete -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMV14guM5kbAvhtNhCy12zhblH1QF5V-0&libraries=places&callback=initMap"
-            async defer></script>
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMV14guM5kbAvhtNhCy12zhblH1QF5V-0&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
