@@ -23,6 +23,8 @@
             <!-- Search bar section -->
             <div class="col-lg-4 search-bar-container">
                 <div class="p-3">
+                    <!-- Clear All button -->
+                    <p type="button" onclick="clearAll()">Clear All</p>
                     <!-- Autocomplete input field -->
                     <div class="input-group mb-3">
                         <input type="text" id="location-input" class="form-control" placeholder="Enter origin of your LCL cargo">
@@ -51,7 +53,7 @@
 
         // Mock data for supplier prices
         var supplierPrices = [
-            { name: 'Supplier 1', price: 1000 },
+            { name: 'Supplier 1', price: 1000, fca: 123 },
             { name: 'Supplier 2', price: 1100 },
             { name: 'Supplier 3', price: 1050 },
             { name: 'Supplier 4', price: 1200 },
@@ -220,18 +222,16 @@
         var previousState;
 
         // Function to display card information in the search bar container
-        // Function to display card information in the search bar container
-        function displayCardInformation(name, price) {
+        function displayCardInformation(name, price, fca) {
             var searchBarContainer = document.querySelector('.search-bar-container');
             // Store the previous state
             previousState = searchBarContainer.innerHTML;
             var content = '<div><button class="btn btn-secondary mb-3" onclick="goBack()">Go Back</button></div>' + 
                         '<h3>' + name + '</h3><p>Price: $' + price + ' Ton/M3</p>' +
                         '<p>Some additional information about ' + name + '</p>' +
-                        '<p>Another piece of information</p>';
+                        '<p>Another piece of information ' + fca + '</p>';
             searchBarContainer.innerHTML = content;
         }
-
 
         // Function to go back to the supplier prices view
         function goBack() {
@@ -309,7 +309,7 @@
         };
 
         // Function to clear the search result
-        function clearSearchResult() {
+        function clearAll() {
             document.getElementById('location-input').value = '';
             clearMarkers();
             clearLines();
