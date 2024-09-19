@@ -167,18 +167,53 @@
 
         // Function to add location markers based on search result
         function addLocationMarkers() {
-            var lowestPrice = Math.min(...supplierPrices.map(supplier => supplier.price));
+            var lowestPriceSupplier = supplierPrices.reduce((lowest, supplier) => 
+                supplier.price < lowest.price ? supplier : lowest, supplierPrices[0]);
+
             var locations = [
-                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: lowestPrice },
-                // { name: 'Porto de Paranaguá', location: { lat: -25.5097, lng: -48.5261 }, lowestPrice: lowestPrice },
-                // { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: lowestPrice },
-                // { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: lowestPrice }
+                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: lowestPriceSupplier.price, supplierName: lowestPriceSupplier.name },
+                // Add other locations if needed
             ];
 
+            var logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVe_2Y2KKHo7iNmDu2DDb1XEKEpp1fKk8vnQ&s";
+
             locations.forEach(function(location) {
-                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice, '#4285F4'); // Change marker color for additional locations
-            });
-        }
+                var contentString = `
+                    <div>
+                        <h5>${location.name}</h5>
+                        <p>Supplier: ${location.supplierName}</p>
+                        <p>Lowest Price: $${location.lowestPrice} Ton/M3</p>
+                        <img src="${logoUrl}" alt="Shipping Company Logo" style="max-width: 100px;">
+                    </div>`;
+
+                var infowindow = new google.maps.InfoWindow({
+            content: contentString
+        });
+
+        var marker = new google.maps.Marker({
+            position: location.location,
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#4285F4',
+                fillOpacity: 1,
+                strokeWeight: 0,
+                scale: 8
+            }
+        });
+
+        markers.push(marker);
+
+        marker.addListener('mouseover', function() {
+            infowindow.open(map, marker);
+        });
+
+        marker.addListener('mouseout', function() {
+            infowindow.close();
+        });
+    });
+}
+
 
         // Function to clear all markers from the map
         function clearMarkers() {
