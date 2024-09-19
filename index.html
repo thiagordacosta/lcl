@@ -380,14 +380,68 @@
 
         // Function to clear the search result
         function clearAll() {
-            document.getElementById('location-input').value = '';
+        document.getElementById('location-input').value = ''; // Limpa o campo de entrada
+        clearMarkers(); // Limpa os marcadores
+        clearLines(); // Limpa as linhas
+        clearSupplierPrices(); // Limpa os preços dos fornecedores
+        map.setCenter({ lat: 0, lng: 0 }); // Redefine o centro do mapa
+        map.setZoom(2); // Redefine o zoom do mapa
+        searchLocation = null; // Reseta a localização pesquisada
+
+        // Reinicializa o autocomplete após limpar o campo de busca
+        var autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById('location-input')
+        );
+        autocomplete.bindTo('bounds', map); // Religa o autocomplete aos limites do mapa
+
+        // Adiciona o evento de seleção de local novamente com limite para Shenzhen
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                window.alert("No details available for input: '" + place.name + "'");
+                return;
+            }
+
+            // Definir os limites de Shenzhen
+            var shenzhenBounds = new google.maps.LatLngBounds(
+                new google.maps.LatLng(22.375, 113.775),
+                new google.maps.LatLng(23.375, 114.775)
+            );
+
+            // Verifica se o local selecionado está dentro dos limites de Shenzhen
+            if (!shenzhenBounds.contains(place.geometry.location)) {
+                window.alert("Por favor informe Shenzhen como origem.");
+                return;
+            }
+
+            // Se o local possui uma geometria, exiba no mapa
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17); // Zoom padrão quando não há viewport disponível
+            }
+
+            // Limpa os marcadores e linhas anteriores
             clearMarkers();
             clearLines();
-            clearSupplierPrices();
-            map.setCenter({ lat: 0, lng: 0 });
-            map.setZoom(2);
-            searchLocation = null;
-        }
+
+            // Marca a nova localização pesquisada
+            searchLocation = place.geometry.location;
+            addMarker(searchLocation, "Search Result: " + place.name, '#FF0000');
+
+            // Adiciona novos marcadores e exibe os preços dos fornecedores
+            addLocationMarkers(true);
+            displaySupplierPrices();
+
+            // Ajusta os limites do mapa para incluir todos os marcadores
+            var bounds = new google.maps.LatLngBounds();
+            markers.forEach(function(marker) {
+                bounds.extend(marker.getPosition());
+            });
+            map.fitBounds(bounds);
+        });
+    }
 
         // Function to clear the supplier prices cards
         function clearSupplierPrices() {
