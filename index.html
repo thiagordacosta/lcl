@@ -26,7 +26,7 @@
                     <p type="button" onclick="clearAll()">Limpar</p>
                     <!-- Autocomplete input field -->
                     <div class="input-group mb-3">
-                        <input type="text" id="location-input" class="form-control" placeholder="Entre a origem do seu envio LCL">
+                        <input type="text" id="location-input" class="form-control" placeholder="Escreva a origem do seu envio LCL">
                         <button class="btn btn-primary" type="button" onclick="searchLocation()">Buscar</button>
                     </div>
                     <!-- Cards section -->
@@ -55,16 +55,16 @@
 
         // Mock data for supplier prices
         var supplierPrices = [
-            { name: 'Supplier 1', price: 1000 },
-            { name: 'Supplier 2', price: 1100 },
-            { name: 'Supplier 3', price: 1050 },
-            { name: 'Supplier 4', price: 1200 },
-            { name: 'Supplier 5', price: 950 },
-            { name: 'Supplier 6', price: 1020 },
-            { name: 'Supplier 7', price: 1250 },
-            { name: 'Supplier 8', price: 1080 },
-            { name: 'Supplier 9', price: 1150 },
-            { name: 'Supplier 10', price: 1125 }
+            { name: 'axisshipping.com.br', price: 100 },
+            { name: 'interfreight.com.br', price: 110 },
+            { name: 'actioncargo.com.br', price: 105 },
+            { name: 'ambra-curitiba.com.br', price: 120 },
+            { name: 'justintime.com.br', price: 95 },
+            { name: 'grupoflipper.com.br', price: 102 },
+            { name: 'conexo.com.br', price: 125 },
+            { name: 'chinagate.com.br', price: 250 },
+            { name: 'albar.com.br', price: 115 },
+            { name: 'allseasglobal.com', price: 112 }
         ];
 
         // Initialize and display the map
@@ -96,7 +96,7 @@
                     new google.maps.LatLng(23.375, 114.775)
                 );
                 if (!shenzhenBounds.contains(place.geometry.location)) {
-                    window.alert("Por favor informe Shenzhen como origem.");
+                    window.alert("No momento só suportamos Shenzhen como origem.");
                     return;
                 }
 
@@ -177,8 +177,8 @@
                 var contentString = `
                     <div>
                         <h5>${location.name}</h5>
-                        <p>Supplier: ${location.supplierName}</p>
-                        <p>Lowest Price: $${location.lowestPrice} Ton/M3</p>
+                        <p>Agente: ${location.supplierName}</p>
+                        <p>Menor preço: $${location.lowestPrice} Ton/M3</p>
                         <img src="${logoUrl}" alt="Shipping Company Logo" style="max-width: 100px;">
                         <br>
                         <br>
@@ -297,19 +297,38 @@
             }
         }
 
-        // Function to display supplier prices
+        // Function to display supplier prices in cards
         function displaySupplierPrices() {
             var cardsContainer = document.getElementById('cards');
             cardsContainer.innerHTML = ''; // Clear previous cards
 
-            // Iterate over supplier prices and create cards
             supplierPrices.forEach(function(supplier) {
                 var card = document.createElement('div');
                 card.classList.add('card', 'mb-3');
+                card.style.cursor = 'pointer';  // Change cursor to hand
                 card.innerHTML = '<div class="card-body" onclick="displayCardInformation(\'' + supplier.name + '\', ' + supplier.price + ')"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
                 cardsContainer.appendChild(card);
             });
         }
+
+
+        // Function to display additional information when a card is clicked
+        function displayCardInformation(name, price) {
+            var searchBarContainer = document.querySelector('.search-bar-container');
+            previousState = searchBarContainer.innerHTML;
+            var content = '<div style="margin-top: 20px;"><button class="btn btn-secondary mb-3" onclick="goBack()">Go Back</button></div>' + 
+                        '<h3>' + name + '</h3><p>Price: $' + price + ' Ton/M3</p>' +
+                        '<p>CAPATAZIA/THC/THD: BRL 14,50 Ton/M3</p>' +
+                        '<p><a href= "#">Book NOW!</a></p>';
+            searchBarContainer.innerHTML = content;
+        }
+
+        // Function to go back to the supplier prices view
+        function goBack() {
+            var searchBarContainer = document.querySelector('.search-bar-container');
+            searchBarContainer.innerHTML = previousState;
+        }
+
 
         // Function to search for a location
         window.searchLocation = function() {
