@@ -116,8 +116,8 @@
                 searchLocation = place.geometry.location;
                 addMarker(searchLocation, "Search Result: " + place.name, '#FF0000'); // Change marker color for search result
 
-                // Add additional markers
-                addLocationMarkers();
+                // Add additional markers and make the first InfoWindow and line persistent automatically
+                addLocationMarkers(true); // Pass true to make it persistent from the start
 
                 // Display supplier prices
                 displaySupplierPrices();
@@ -162,7 +162,7 @@
         }
 
         // Function to add location markers based on search result
-        function addLocationMarkers() {
+        function addLocationMarkers(makePersistent) {
             var lowestPriceSupplier = supplierPrices.reduce((lowest, supplier) => 
                 supplier.price < lowest.price ? supplier : lowest, supplierPrices[0]);
 
@@ -233,7 +233,15 @@
                     }
                 });
 
-                // Add click event to make the InfoWindow and line persistent
+                // Make the InfoWindow and line persistent from the start, if instructed
+                if (makePersistent) {
+                    line.setOptions({ strokeOpacity: 1 });
+                    infowindow.open(map, marker);
+                    persistentLine = line;
+                    persistentInfoWindow = infowindow;
+                }
+
+                // Add click event to toggle the persistent line and InfoWindow
                 marker.addListener('click', function() {
                     // Close the previous InfoWindow if one is open
                     if (persistentInfoWindow) {
@@ -331,7 +339,7 @@
                     addMarker(location, "Search Result: " + input, '#FF0000'); // Change marker color for search result
 
                     // Add additional markers
-                    addLocationMarkers();
+                    addLocationMarkers(true); // Automatically make them persistent
 
                     // Display supplier prices
                     displaySupplierPrices();
