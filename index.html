@@ -24,11 +24,11 @@
             <div class="col-lg-4 search-bar-container">
                 <div class="p-3">
                     <!-- Clear All button -->
-                    <p type="button" onclick="clearAll()">Clear All</p>
+                    <p type="button" onclick="clearAll()">Limpar</p>
                     <!-- Autocomplete input field -->
                     <div class="input-group mb-3">
-                        <input type="text" id="location-input" class="form-control" placeholder="Enter origin of your LCL cargo">
-                        <button class="btn btn-primary" type="button" onclick="searchLocation()">Search</button>
+                        <input type="text" id="location-input" class="form-control" placeholder="Entre a origem do seu envio LCL">
+                        <button class="btn btn-primary" type="button" onclick="searchLocation()">Buscar</button>
                     </div>
                     <!-- Cards section -->
                     <div id="cards"></div>
@@ -50,7 +50,20 @@
         var map;
         var markers = [];
         var line;
-        var previousState;
+
+        // Mock data for supplier prices
+        var supplierPrices = [
+            { name: 'Supplier 1', price: 1000 },
+            { name: 'Supplier 2', price: 1100 },
+            { name: 'Supplier 3', price: 1050 },
+            { name: 'Supplier 4', price: 1200 },
+            { name: 'Supplier 5', price: 950 },
+            { name: 'Supplier 6', price: 1020 },
+            { name: 'Supplier 7', price: 1250 },
+            { name: 'Supplier 8', price: 1080 },
+            { name: 'Supplier 9', price: 1150 },
+            { name: 'Supplier 10', price: 1125 }
+        ];
 
         // Initialize and display the map
         function initMap() {
@@ -87,7 +100,7 @@
                     new google.maps.LatLng(23.375, 114.775)
                 );
                 if (!shanghaiBounds.contains(place.geometry.location) && !shenzhenBounds.contains(place.geometry.location)) {
-                    window.alert("Please enter a location in Shanghai or Shenzhen.");
+                    window.alert("Por favor informe Shanghai ou Shenzhen como origem.");
                     return;
                 }
 
@@ -104,7 +117,7 @@
                 clearLines();
 
                 // Set the marker position for the searched location
-                addMarker(place.geometry.location, "Search Result: " + place.name, '#FF0000', null); // Change marker color for search result
+                addMarker(place.geometry.location, "Search Result: " + place.name, '#FF0000'); // Change marker color for search result
 
                 // Add additional markers
                 addLocationMarkers();
@@ -113,7 +126,7 @@
                 addLines(place.geometry.location);
 
                 // Display supplier prices
-                displaySupplierPrices(false);
+                displaySupplierPrices();
 
                 // Adjust map bounds to include all markers
                 var bounds = new google.maps.LatLngBounds();
@@ -125,7 +138,7 @@
         }
 
         // Function to add a marker to the map
-        function addMarker(location, name, color, supplierPrices) {
+        function addMarker(location, name, color) {
             var marker = new google.maps.Marker({
                 position: location,
                 map: map,
@@ -135,18 +148,12 @@
                     fillOpacity: 1,
                     strokeWeight: 0,
                     scale: 8
-                },
-                prices: supplierPrices // Associate supplier prices with the marker
+                }
             });
             markers.push(marker);
 
             var infowindow = new google.maps.InfoWindow({
                 content: name
-            });
-
-            marker.addListener('click', function() {
-                // Display supplier prices when a marker is clicked
-                displaySupplierPrices(true, marker.prices);
             });
 
             marker.addListener('mouseover', function() {
@@ -160,24 +167,16 @@
 
         // Function to add location markers based on search result
         function addLocationMarkers() {
+            var lowestPrice = Math.min(...supplierPrices.map(supplier => supplier.price));
             var locations = [
-                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: 1000 },
-                { name: 'Porto de Paranaguá', location: { lat: -25.5097, lng: -48.5261 }, lowestPrice: 1100 },
-                { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: 1050 },
-                { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: 1200 }
+                { name: 'Porto de Santos', location: { lat: -23.958056, lng: -46.303889 }, lowestPrice: lowestPrice },
+                // { name: 'Porto de Paranaguá', location: { lat: -25.5097, lng: -48.5261 }, lowestPrice: lowestPrice },
+                // { name: 'Porto de Rio Grande', location: { lat: -32.035556, lng: -52.101111 }, lowestPrice: lowestPrice },
+                // { name: 'Porto de Suape', location: { lat: -8.388333, lng: -34.938611 }, lowestPrice: lowestPrice }
             ];
 
             locations.forEach(function(location) {
-                var supplierPrices = [
-                    { name: 'Supplier 1', price: location.lowestPrice },
-                    { name: 'Supplier 2', price: location.lowestPrice + 50 },
-                    { name: 'Supplier 3', price: location.lowestPrice + 100 } ,
-                    { name: 'Supplier 4', price: location.lowestPrice },
-                    { name: 'Supplier 5', price: location.lowestPrice + 50 },
-                    { name: 'Supplier 6', price: location.lowestPrice + 100 }
-                ];
-
-                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice, '#4285F4', supplierPrices); // Change marker color for additional locations
+                addMarker(location.location, location.name + " - Lowest Price: $" + location.lowestPrice, '#4285F4'); // Change marker color for additional locations
             });
         }
 
@@ -219,6 +218,9 @@
             }
         }
 
+        // Variable to store the previous state
+        var previousState;
+
         // Function to display card information in the search bar container
         function displayCardInformation(name, price) {
             var searchBarContainer = document.querySelector('.search-bar-container');
@@ -239,19 +241,17 @@
         }
 
         // Function to display supplier prices
-        function displaySupplierPrices(displayCard, prices) {
+        function displaySupplierPrices() {
             var cardsContainer = document.getElementById('cards');
             cardsContainer.innerHTML = ''; // Clear previous cards
 
-            // If prices are provided, display them
-            if (displayCard && prices) {
-                prices.forEach(function(supplier) {
-                    var card = document.createElement('div');
-                    card.classList.add('card', 'mb-3');
-                    card.innerHTML = '<div class="card-body" onclick="displayCardInformation(\'' + supplier.name + '\', ' + supplier.price + ')"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
-                    cardsContainer.appendChild(card);
-                });
-            }
+            // Iterate over supplier prices and create cards
+            supplierPrices.forEach(function(supplier) {
+                var card = document.createElement('div');
+                card.classList.add('card', 'mb-3');
+                card.innerHTML = '<div class="card-body" onclick="displayCardInformation(\'' + supplier.name + '\', ' + supplier.price + ')"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
+                cardsContainer.appendChild(card);
+            });
         }
 
         // Function to search for a location
@@ -264,17 +264,13 @@
                 if (status === 'OK') {
                     var location = results[0].geometry.location;
 
-                    // Ensure the location is in Shanghai or Shenzhen
-                    var shanghaiBounds = new google.maps.LatLngBounds(
-                        new google.maps.LatLng(30.975, 120.975),
-                        new google.maps.LatLng(31.975, 121.975)
-                    );
+                    // Ensure the location is in Shenzhen
                     var shenzhenBounds = new google.maps.LatLngBounds(
                         new google.maps.LatLng(22.375, 113.775),
                         new google.maps.LatLng(23.375, 114.775)
                     );
                     if (!shanghaiBounds.contains(location) && !shenzhenBounds.contains(location)) {
-                        window.alert("Please enter a location in Shanghai or Shenzhen.");
+                        window.alert("Por favor informe Shenzehen ou Shanghai como origem.");
                         return;
                     }
 
@@ -285,7 +281,7 @@
                     clearLines();
 
                     // Set the marker position for the searched location
-                    addMarker(location, "Search Result: " + input, '#FF0000', null); // Change marker color for search result
+                    addMarker(location, "Search Result: " + input, '#FF0000'); // Change marker color for search result
 
                     // Add additional markers
                     addLocationMarkers();
@@ -294,7 +290,7 @@
                     addLines(location);
 
                     // Display supplier prices
-                    displaySupplierPrices(false);
+                    displaySupplierPrices();
 
                     // Adjust map bounds to include all markers
                     var bounds = new google.maps.LatLngBounds();
