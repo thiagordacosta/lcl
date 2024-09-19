@@ -302,14 +302,25 @@
             var cardsContainer = document.getElementById('cards');
             cardsContainer.innerHTML = ''; // Clear previous cards
 
+            // Find the supplier with the lowest price
+            var lowestPriceSupplier = supplierPrices.reduce((lowest, supplier) => 
+                supplier.price < lowest.price ? supplier : lowest, supplierPrices[0]);
+
             supplierPrices.forEach(function(supplier) {
                 var card = document.createElement('div');
                 card.classList.add('card', 'mb-3');
+
+                // Check if this supplier has the lowest price and apply the light blue color
+                if (supplier === lowestPriceSupplier) {
+                    card.style.backgroundColor = 'lightblue';
+                }
+
                 card.style.cursor = 'pointer';  // Change cursor to hand
                 card.innerHTML = '<div class="card-body" onclick="displayCardInformation(\'' + supplier.name + '\', ' + supplier.price + ')"><h5 class="card-title">' + supplier.name + '</h5><p class="card-text">Price: $' + supplier.price + ' Ton/M3</p></div>';
                 cardsContainer.appendChild(card);
             });
         }
+
 
 
         // Function to display additional information when a card is clicked
