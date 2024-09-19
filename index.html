@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Maps API Example</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -49,7 +48,10 @@
     <script>
         var map;
         var markers = [];
-        var persistentLine = null;  // Persistent line variable
+        var lines = [];
+        var persistentLine = null;
+        var searchLocation = null;
+        var persistentInfoWindow = null; // To track the currently open InfoWindow
 
         // Mock data for supplier prices
         var supplierPrices = [
@@ -88,7 +90,7 @@
                     return;
                 }
 
-                // Ensure the location is only in Shenzhen
+                // Ensure the location is in Shenzhen
                 var shenzhenBounds = new google.maps.LatLngBounds(
                     new google.maps.LatLng(22.375, 113.775),
                     new google.maps.LatLng(23.375, 114.775)
@@ -111,10 +113,11 @@
                 clearLines();
 
                 // Set the marker position for the searched location
-                addMarker(place.geometry.location, "Search Result: " + place.name, '#FF0000'); // Change marker color for search result
+                searchLocation = place.geometry.location;
+                addMarker(searchLocation, "Search Result: " + place.name, '#FF0000'); // Change marker color for search result
 
                 // Add additional markers
-                addLocationMarkers(place.geometry.location);
+                addLocationMarkers();
 
                 // Display supplier prices
                 displaySupplierPrices();
@@ -152,12 +155,14 @@
             });
 
             marker.addListener('mouseout', function() {
-                infowindow.close();
+                if (persistentInfoWindow !== infowindow) {
+                    infowindow.close();
+                }
             });
         }
 
         // Function to add location markers based on search result
-        function addLocationMarkers(searchLocation) {
+        function addLocationMarkers() {
             var lowestPriceSupplier = supplierPrices.reduce((lowest, supplier) => 
                 supplier.price < lowest.price ? supplier : lowest, supplierPrices[0]);
 
@@ -195,30 +200,65 @@
 
                 markers.push(marker);
 
-                // Add click event to show persistent line
-                marker.addListener('click', function() {
-                    if (persistentLine) {
-                        persistentLine.setMap(null); // Clear the previous persistent line
-                    }
-
-                    persistentLine = new google.maps.Polyline({
-                        path: [searchLocation, marker.getPosition()],
-                        geodesic: true,
-                        strokeColor: '#FF0000',
-                        strokeOpacity: 1,  // Persistent line visible
-                        strokeWeight: 2,
-                        map: map
-                    });
-
-                    infowindow.open(map, marker); // Show the infowindow on click
+                // Create a line between searchLocation and this marker
+                var line = new google.maps.Polyline({
+                    path: [searchLocation, marker.getPosition()],
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0, // initially hidden
+                    strokeWeight: 2,
+                    map: map
                 });
+                lines.push(line);
 
+                // Add properties to marker for easy access
+                marker.line = line;
+
+                // Mouseover and mouseout events to show/hide the line
                 marker.addListener('mouseover', function() {
-                    infowindow.open(map, marker);
+                    if (persistentLine !== line) {
+                        line.setOptions({ strokeOpacity: 1 });
+                    }
+                    if (persistentInfoWindow !== infowindow) {
+                        infowindow.open(map, marker);
+                    }
                 });
 
                 marker.addListener('mouseout', function() {
-                    infowindow.close();
+                    if (persistentLine !== line) {
+                        line.setOptions({ strokeOpacity: 0 });
+                    }
+                    if (persistentInfoWindow !== infowindow) {
+                        infowindow.close();
+                    }
+                });
+
+                // Add click event to make the InfoWindow and line persistent
+                marker.addListener('click', function() {
+                    // Close the previous InfoWindow if one is open
+                    if (persistentInfoWindow) {
+                        persistentInfoWindow.close();
+                    }
+
+                    // Check if the clicked marker's line is already the persistentLine
+                    if (persistentLine === marker.line) {
+                        // If it's already the persistent line, hide it and clear persistentLine
+                        marker.line.setOptions({ strokeOpacity: 0 });
+                        persistentLine = null;
+                        persistentInfoWindow = null;
+                    } else {
+                        // If it's a new marker, remove the previous persistent line
+                        if (persistentLine) {
+                            persistentLine.setOptions({ strokeOpacity: 0 });
+                        }
+                        // Set the new persistent line and make it visible
+                        persistentLine = marker.line;
+                        marker.line.setOptions({ strokeOpacity: 1 });
+
+                        // Open the InfoWindow and make it persistent
+                        infowindow.open(map, marker);
+                        persistentInfoWindow = infowindow;
+                    }
                 });
             });
         }
@@ -233,9 +273,16 @@
 
         // Function to clear all lines from the map
         function clearLines() {
-            if (persistentLine) {
-                persistentLine.setMap(null);  // Clear persistent line
-                persistentLine = null;
+            lines.forEach(function(line) {
+                line.setMap(null);
+            });
+            lines = [];
+            persistentLine = null;
+
+            // Close the persistent InfoWindow
+            if (persistentInfoWindow) {
+                persistentInfoWindow.close();
+                persistentInfoWindow = null;
             }
         }
 
@@ -263,7 +310,7 @@
                 if (status === 'OK') {
                     var location = results[0].geometry.location;
 
-                    // Ensure the location is only in Shenzhen
+                    // Ensure the location is in Shenzhen
                     var shenzhenBounds = new google.maps.LatLngBounds(
                         new google.maps.LatLng(22.375, 113.775),
                         new google.maps.LatLng(23.375, 114.775)
@@ -280,10 +327,11 @@
                     clearLines();
 
                     // Set the marker position for the searched location
+                    searchLocation = location;
                     addMarker(location, "Search Result: " + input, '#FF0000'); // Change marker color for search result
 
                     // Add additional markers
-                    addLocationMarkers(location);
+                    addLocationMarkers();
 
                     // Display supplier prices
                     displaySupplierPrices();
@@ -308,6 +356,7 @@
             clearSupplierPrices();
             map.setCenter({ lat: 0, lng: 0 });
             map.setZoom(2);
+            searchLocation = null;
         }
 
         // Function to clear the supplier prices cards
